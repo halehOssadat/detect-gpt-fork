@@ -205,7 +205,7 @@ def _openai_sample(p):
 
 
 # sample from base_model using ****only**** the first 30 tokens in each example as context
-def sample_from_model(texts, min_words=55, prompt_tokens=30):
+def sample_from_model(texts, min_words=10, prompt_tokens=30):
     # encode each text as a list of token ids
     if args.dataset == 'pubmed':
         texts = [t[:t.index(custom_datasets.SEPARATOR)] for t in texts]
@@ -597,7 +597,7 @@ def generate_samples(raw_data, batch_size):
     for batch in range(len(raw_data) // batch_size):
         print('Generating samples for batch', batch, 'of', len(raw_data) // batch_size)
         original_text = raw_data[batch * batch_size:(batch + 1) * batch_size]
-        sampled_text = sample_from_model(original_text, min_words=30 if args.dataset in ['pubmed'] else 55)
+        sampled_text = sample_from_model(original_text, min_words=30 if args.dataset in ['pubmed'] else 15)
 
         for o, s in zip(original_text, sampled_text):
             if args.dataset == 'pubmed':
@@ -743,7 +743,7 @@ def eval_supervised(data, model):
 
 
 if __name__ == '__main__':
-    DEVICE = "cuda"
+    DEVICE = "cpu"
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default="xsum")
@@ -816,7 +816,7 @@ if __name__ == '__main__':
     n_perturbation_rounds = args.n_perturbation_rounds
     n_similarity_samples = args.n_similarity_samples
 
-    cache_dir = args.cache_dir
+    cache_dir = os.path.expanduser(args.cache_dir)
     os.environ["XDG_CACHE_HOME"] = cache_dir
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
@@ -866,7 +866,7 @@ if __name__ == '__main__':
         torch.cuda.empty_cache()
         base_model, base_tokenizer = load_base_model_and_tokenizer(args.scoring_model_name)
         load_base_model()  # Load again because we've deleted/replaced the old model
-
+    print(len(data))
     # write the data to a json file in the save folder
     with open(os.path.join(SAVE_FOLDER, "raw_data.json"), "w") as f:
         print(f"Writing raw data to {os.path.join(SAVE_FOLDER, 'raw_data.json')}")

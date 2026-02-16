@@ -1,10 +1,11 @@
 import random
 import datasets
+import json
 
 SEPARATOR = '<<<SEP>>>'
 
 
-DATASETS = ['writing', 'english', 'german', 'pubmed']
+DATASETS = ['writing', 'english', 'german', 'pubmed', 'commits_gpt2', 'commits_gpt3']
 
 
 def load_pubmed(cache_dir):
@@ -80,6 +81,28 @@ def load_german(cache_dir):
 def load_english(cache_dir):
     return load_language('en', cache_dir)
 
+def load_commits_gpt2(cache_dir):
+    '''
+    load our custom dataset, 
+    return list of strings
+    '''
+    with open(f'{cache_dir}/airflow_commits_data2019-2022.json') as f:
+        dataset = json.load(f)
+    data = [dataset[i]['msg'] for i in range(len(dataset))]
+
+    return data
+
+def load_commits_gpt3(cache_dir):
+    '''
+    load our custom dataset, 
+    return list of strings
+    '''
+    with open(f'{cache_dir}/airflow_commits_data2022-2024.json') as f:
+        dataset = json.load(f)
+    data = [dataset[i]['msg'] for i in range(len(dataset))]
+
+    return data
+
 
 def load(name, cache_dir, **kwargs):
     if name in DATASETS:
@@ -87,3 +110,4 @@ def load(name, cache_dir, **kwargs):
         return load_fn(cache_dir=cache_dir, **kwargs)
     else:
         raise ValueError(f'Unknown dataset {name}')
+    
